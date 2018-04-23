@@ -114,7 +114,7 @@ const _applyOperator = (verb, op) => (context, address, name, value) => (possibl
 const _applyInc = _applyOperator('inc', (x, y) => x + y)
 const _applyDec = _applyOperator('dec', (x, y) => x - y)
 
-class IntegerKeyHandler extends TransactionHandler {
+class VoteHandler extends TransactionHandler {
   constructor () {
     super(TP_FAMILY, ['1.0'], [TP_NAMESPACE])
   }
@@ -148,7 +148,7 @@ class IntegerKeyHandler extends TransactionHandler {
         if (value === null || value === undefined) {
           throw new InvalidTransaction('Value is required')
         }
-
+        /* Do not parse it to int
         let parsed = parseInt(value)
         if (parsed !== value || parsed < MIN_VALUE || parsed > MAX_VALUE) {
           throw new InvalidTransaction(
@@ -158,17 +158,20 @@ class IntegerKeyHandler extends TransactionHandler {
         }
 
         value = parsed
+        */
 
         // Determine the action to apply based on the verb
         let actionFn
         if (verb === 'set') {
           actionFn = _applySet
+        /* Only set at the moment
         } else if (verb === 'dec') {
           actionFn = _applyDec
         } else if (verb === 'inc') {
           actionFn = _applyInc
+        */
         } else {
-          throw new InvalidTransaction(`Verb must be set, inc, dec not ${verb}`)
+          throw new InvalidTransaction(`Verb must be set not ${verb}`)
         }
 
         let address = TP_NAMESPACE + _hash(name).slice(-64)
@@ -192,4 +195,4 @@ class IntegerKeyHandler extends TransactionHandler {
   }
 }
 
-module.exports = IntegerKeyHandler
+module.exports = VoteHandler
