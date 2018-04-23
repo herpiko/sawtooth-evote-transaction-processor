@@ -1,0 +1,16 @@
+{
+  "name": "sawtooth-evote-transaction-processor",
+  "version": "1.0.0",
+  "description": "Vote transaction processor, forked from intkey transaction family / sawtooth JS sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js tcp://127.0.0.1:4004"
+  },
+  "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "cbor": "^3.0.0",
+    "sawtooth-sdk": "^1.0.2"
+  }
+}
