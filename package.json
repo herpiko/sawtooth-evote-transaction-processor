@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js tcp://127.0.0.1:4004"
+    "start-vote": "node index.js vote tcp://127.0.0.1:4004",
+    "start-dpt": "node index.js dpt tcp://127.0.0.1:4004",
+    "start-vote-node-1": "node index.js vote tcp://10.2.206.83:4004",
+    "start-vote-node-2": "node index.js vote tcp://10.2.206.83:4004",
+    "start-dpt-node-1": "node index.js dpt tcp://10.2.206.83:4004",
+    "start-dpt-node-2": "node index.js dpt tcp://10.2.206.83:4004"
   },
   "author": "Herpiko Dwi Aguno <herpiko@gmail.com>",
   "license": "Apache-2.0",

@@ -19,16 +19,25 @@
 
 const { TransactionProcessor } = require('sawtooth-sdk/processor')
 const VoteHandler = require('./vote_handler')
+const DPTHandler = require('./dpt_handler')
 
-if (process.argv.length < 3) {
-  console.log('missing a validator address')
+if (!process.argv[2] || !process.argv[3]) {
+  console.log('Incomplete arguments. Should be : node index tpfamily tcp::host:4004')
   process.exit(1)
 }
 
-const address = process.argv[2]
+const family = process.argv[2]
+const address = process.argv[3]
 
 const transactionProcessor = new TransactionProcessor(address)
 
-transactionProcessor.addHandler(new VoteHandler())
+if (family === 'vote') {
+  transactionProcessor.addHandler(new VoteHandler())
+} else if (family === 'dpt') {
+  transactionProcessor.addHandler(new DPTHandler())
+} else {
+  console.log('No such tp family : ' + family);
+  process.exit(1);
+}
 
 transactionProcessor.start()
