@@ -18,11 +18,12 @@
 'use strict'
 
 const { TransactionProcessor } = require('sawtooth-sdk/processor')
-const VoteHandler = require('./vote_handler')
-const DPTHandler = require('./dpt_handler')
+const ProvinceDPTHandler = require('./province-dpt-handler');
+const LocalVoteHandler = require('./local-vote-handler')
+const LocalDPTHandler = require('./local-dpt-handler')
 
 if (!process.argv[2] || !process.argv[3]) {
-  console.log('Incomplete arguments. Should be : node index tpfamily tcp::host:4004')
+  console.log('Incomplete arguments. Should be : node index tpfamily tcp://host:4004')
   process.exit(1)
 }
 
@@ -30,14 +31,23 @@ const family = process.argv[2]
 const address = process.argv[3]
 
 const transactionProcessor = new TransactionProcessor(address)
+console.log('current tp family : ' + family);
 
-if (family === 'vote') {
-  transactionProcessor.addHandler(new VoteHandler())
-} else if (family === 'dpt') {
-  transactionProcessor.addHandler(new DPTHandler())
-} else {
-  console.log('No such tp family : ' + family);
-  process.exit(1);
+switch(family) {
+  case 'localVote':
+    transactionProcessor.addHandler(new LocalVoteHandler())
+    transactionProcessor.start();
+    break;
+  case 'localDPT':
+    transactionProcessor.addHandler(new LocalDPTHandler())
+    transactionProcessor.start();
+    break;
+  case 'provinceDPT':
+    transactionProcessor.addHandler(new ProvinceDPTHandler())
+    transactionProcessor.start();
+    break;
+  default :
+    console.log('No such tp family : ' + family);
+    process.exit(1);
 }
 
-transactionProcessor.start()

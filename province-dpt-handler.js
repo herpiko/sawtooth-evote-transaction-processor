@@ -29,7 +29,7 @@ const cbor = require('cbor')
 const _hash = (x) =>
   crypto.createHash('sha512').update(x).digest('hex').toLowerCase()
 
-const TP_FAMILY = 'dpt'
+const TP_FAMILY = 'provinceDPT'
 const TP_NAMESPACE = _hash(TP_FAMILY).substring(0, 6)
 
 const _decodeCbor = (buffer) =>
@@ -93,7 +93,7 @@ const _applyOperator = (verb, op) => (context, address, name, value) => (possibl
 
 const _applyReady = _applyOperator('ready');
 const _applyVote = _applyOperator('vote');
-const _applyDeath = _applyOperator('death');
+const _applyInvalid = _applyOperator('invalid');
 
 class DPTHandler extends TransactionHandler {
   constructor () {
@@ -128,10 +128,10 @@ class DPTHandler extends TransactionHandler {
           actionFn = _applyReady
         } else if (verb === 'vote') {
           actionFn = _applyVote
-        } else if (verb === 'death') {
-          actionFn = _applyDeath
+        } else if (verb === 'invalid') {
+          actionFn = _applyInvalid
         } else {
-          throw new InvalidTransaction(`Verb must be registered,ready,vote,death not ${verb}`)
+          throw new InvalidTransaction(`Verb must be registered,ready,vote,invalid not ${verb}`)
         }
 
         let address = TP_NAMESPACE + _hash(name).slice(-64)

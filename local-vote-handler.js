@@ -34,7 +34,7 @@ const MAX_NAME_LENGTH = 20
 const _hash = (x) =>
   crypto.createHash('sha512').update(x).digest('hex').toLowerCase()
 
-const TP_FAMILY = 'vote'
+const TP_FAMILY = 'localVote'
 const TP_NAMESPACE = _hash(TP_FAMILY).substring(0, 6)
 
 const _decodeCbor = (buffer) =>
