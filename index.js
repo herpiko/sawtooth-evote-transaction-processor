@@ -21,6 +21,7 @@ const { TransactionProcessor } = require('sawtooth-sdk/processor')
 const ProvinceDPTHandler = require('./province-dpt-handler');
 const LocalVoteHandler = require('./local-vote-handler')
 const LocalDPTHandler = require('./local-dpt-handler')
+const CandidatesHandler = require('./local-candidates-handler')
 
 if (!process.argv[2] || !process.argv[3]) {
   console.log('Incomplete arguments. Should be : node index tpfamily tcp://host:4004')
@@ -40,6 +41,7 @@ switch(family) {
     break;
   case 'localDPT':
     transactionProcessor.addHandler(new LocalDPTHandler())
+    transactionProcessor.addHandler(new CandidatesHandler())
     transactionProcessor.start();
     break;
   case 'provinceDPT':

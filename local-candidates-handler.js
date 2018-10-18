@@ -26,10 +26,15 @@ const {
 const crypto = require('crypto')
 const cbor = require('cbor')
 
+// Constants defined in intkey specification
+const MIN_VALUE = 0
+const MAX_VALUE = 4294967295
+const MAX_NAME_LENGTH = 20
+
 const _hash = (x) =>
   crypto.createHash('sha512').update(x).digest('hex').toLowerCase()
 
-const TP_FAMILY = 'localDPT'
+const TP_FAMILY = 'candidates'
 const TP_NAMESPACE = _hash(TP_FAMILY).substring(0, 6)
 
 const _decodeCbor = (buffer) =>
@@ -50,7 +55,7 @@ const _setEntry = (context, address, stateValue) => {
 }
 
 const _applySet = (context, address, name, value) => (possibleAddressValues) => {
-  console.log('register new tx :');
+  console.log('applySet');
   console.log(possibleAddressValues);
   let stateValueRep = possibleAddressValues[address]
 
@@ -65,18 +70,17 @@ const _applySet = (context, address, name, value) => (possibleAddressValues) => 
     }
   }
 
-  // 'ready' passes checks so store it in the state
+  // 'set' passes checks so store it in the state
   if (!stateValue) {
     stateValue = {}
   }
-  stateValue[name] = 'ready';
+
+  stateValue[name] = value
 
   return _setEntry(context, address, stateValue)
 }
 
 const _applyOperator = (verb, op) => (context, address, name, value) => (possibleAddressValues) => {
-  console.log('update existing tx :');
-  console.log(possibleAddressValues);
   let stateValueRep = possibleAddressValues[address]
   if (!stateValueRep || stateValueRep.length === 0) {
     throw new InvalidTransaction(`Verb is ${verb} but Name is not in state`)
@@ -87,13 +91,30 @@ const _applyOperator = (verb, op) => (context, address, name, value) => (possibl
     throw new InvalidTransaction(`Verb is ${verb} but Name is not in state`)
   }
 
-  stateValue[name] = verb;
+  const result = op(stateValue[name], value)
+
+  if (result < MIN_VALUE) {
+    throw new InvalidTransaction(
+      `Verb is ${verb}, but result would be less than ${MIN_VALUE}`
+    )
+  }
+
+  if (result > MAX_VALUE) {
+    throw new InvalidTransaction(
+      `Verb is ${verb}, but result would be greater than ${MAX_VALUE}`
+    )
+  }
+
+  // Increment the value in state by value
+  // stateValue[name] = op(stateValue[name], value)
+  stateValue[name] = result
   return _setEntry(context, address, stateValue)
 }
 
-const _applyVote = _applyOperator('vote');
+const _applyInc = _applyOperator('inc', (x, y) => x + y)
+const _applyDec = _applyOperator('dec', (x, y) => x - y)
 
-class DPTHandler extends TransactionHandler {
+class CandidatesHandler extends TransactionHandler {
   constructor () {
     super(TP_FAMILY, ['1.0'], [TP_NAMESPACE])
   }
@@ -102,11 +123,20 @@ class DPTHandler extends TransactionHandler {
     return _decodeCbor(transactionProcessRequest.payload)
       .catch(_toInternalError)
       .then((update) => {
+        console.log('apply, decodeCbor, then -----------');
+        console.log(update);
+        console.log('--------------------------');
         //
         // Validate the update
         let name = update.Name
         if (!name) {
           throw new InvalidTransaction('Name is required')
+        }
+
+        if (name.length > MAX_NAME_LENGTH) {
+          throw new InvalidTransaction(
+            `Name must be a string of no more than ${MAX_NAME_LENGTH} characters`
+          )
         }
 
         let verb = update.Verb
@@ -118,16 +148,8 @@ class DPTHandler extends TransactionHandler {
         if (value === null || value === undefined) {
           throw new InvalidTransaction('Value is required')
         }
-        // Determine the action to apply based on the verb
-        let actionFn
-        if (verb === 'ready') {
-          actionFn = _applySet
-        } else if (verb === 'vote') {
-          actionFn = _applyVote
-        } else {
-          throw new InvalidTransaction(`Verb must be ready or vote not ${verb}`)
-        }
 
+        let actionFn = _applySet
         let address = TP_NAMESPACE + _hash(name).slice(-64)
 
         // Get the current state, for the key's address:
@@ -149,4 +171,4 @@ class DPTHandler extends TransactionHandler {
   }
 }
 
-module.exports = DPTHandler
+module.exports = CandidatesHandler
