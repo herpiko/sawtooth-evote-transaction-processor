@@ -91,9 +91,7 @@ const _applyOperator = (verb, op) => (context, address, name, value) => (possibl
   return _setEntry(context, address, stateValue)
 }
 
-const _applyReady = _applyOperator('ready');
 const _applyVote = _applyOperator('vote');
-const _applyDeath = _applyOperator('death');
 
 class DPTHandler extends TransactionHandler {
   constructor () {
@@ -122,16 +120,12 @@ class DPTHandler extends TransactionHandler {
         }
         // Determine the action to apply based on the verb
         let actionFn
-        if (verb === 'registered') {
+        if (verb === 'ready') {
           actionFn = _applySet
-        } else if (verb === 'ready' ) {
-          actionFn = _applyReady
         } else if (verb === 'vote') {
           actionFn = _applyVote
-        } else if (verb === 'death') {
-          actionFn = _applyDeath
         } else {
-          throw new InvalidTransaction(`Verb must be registered,ready,vote,death not ${verb}`)
+          throw new InvalidTransaction(`Verb must be ready or vote not ${verb}`)
         }
 
         let address = TP_NAMESPACE + _hash(name).slice(-64)
