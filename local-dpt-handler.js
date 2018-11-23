@@ -123,7 +123,7 @@ class DPTHandler extends TransactionHandler {
         if (verb === 'ready') {
           actionFn = _applySet
         } else if (verb === 'vote') {
-          actionFn = _applyVote
+          actionFn = _applySet
         } else {
           throw new InvalidTransaction(`Verb must be ready or vote not ${verb}`)
         }
