@@ -80,40 +80,6 @@ const _applySet = (context, address, name, value) => (possibleAddressValues) => 
   return _setEntry(context, address, stateValue)
 }
 
-const _applyOperator = (verb, op) => (context, address, name, value) => (possibleAddressValues) => {
-  let stateValueRep = possibleAddressValues[address]
-  if (!stateValueRep || stateValueRep.length === 0) {
-    throw new InvalidTransaction(`Verb is ${verb} but Name is not in state`)
-  }
-
-  let stateValue = cbor.decodeFirstSync(stateValueRep)
-  if (stateValue[name] === null || stateValue[name] === undefined) {
-    throw new InvalidTransaction(`Verb is ${verb} but Name is not in state`)
-  }
-
-  const result = op(stateValue[name], value)
-
-  if (result < MIN_VALUE) {
-    throw new InvalidTransaction(
-      `Verb is ${verb}, but result would be less than ${MIN_VALUE}`
-    )
-  }
-
-  if (result > MAX_VALUE) {
-    throw new InvalidTransaction(
-      `Verb is ${verb}, but result would be greater than ${MAX_VALUE}`
-    )
-  }
-
-  // Increment the value in state by value
-  // stateValue[name] = op(stateValue[name], value)
-  stateValue[name] = result
-  return _setEntry(context, address, stateValue)
-}
-
-const _applyInc = _applyOperator('inc', (x, y) => x + y)
-const _applyDec = _applyOperator('dec', (x, y) => x - y)
-
 class VoteHandler extends TransactionHandler {
   constructor () {
     super(TP_FAMILY, ['1.0'], [TP_NAMESPACE])
@@ -164,12 +130,6 @@ class VoteHandler extends TransactionHandler {
         let actionFn
         if (verb === 'set') {
           actionFn = _applySet
-        /* Only set at the moment
-        } else if (verb === 'dec') {
-          actionFn = _applyDec
-        } else if (verb === 'inc') {
-          actionFn = _applyInc
-        */
         } else {
           throw new InvalidTransaction(`Verb must be set not ${verb}`)
         }
