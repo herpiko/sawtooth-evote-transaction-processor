@@ -17,6 +17,7 @@
 
 'use strict'
 
+const base64 = require('js-base64').Base64;
 const { TransactionHandler } = require('sawtooth-sdk/processor/handler')
 const {
   InvalidTransaction,
@@ -57,8 +58,11 @@ const _applySet = (context, address, name, value) => (possibleAddressValues) => 
   let stateValue
   if (stateValueRep && stateValueRep.length > 0) {
     stateValue = cbor.decodeFirstSync(stateValueRep)
+    console.log('-----------------------------------------------------------');
+    console.log(stateValue[name]);
+    console.log(value)
     let stateName = stateValue[name]
-    if (stateName) {
+    if (stateName && (value == 'registered' || value == 'ready' || value == 'invalid')) {
       throw new InvalidTransaction(
         `Verb is "set" but Name already in state, Name: ${name} Value: ${stateName}`
       )
@@ -69,8 +73,21 @@ const _applySet = (context, address, name, value) => (possibleAddressValues) => 
   if (!stateValue) {
     stateValue = {}
   }
-  stateValue[name] = 'ready';
 
+  if (value == 'registered' || value == 'ready' || value == 'invalid') {
+    stateValue[name] = value;
+  } else {
+    if (!stateValue[name]) {
+      stateValue[name] = base64.encode(JSON.stringify([base64.encode(value)]))
+    } else {
+      let state = JSON.parse(base64.decode(stateValue[name]))
+      state[state.length] = base64.encode(value);
+      stateValue[name] = base64.encode(JSON.stringify(state))
+    }
+  }
+
+  console.log('-----------------------------------------------------------stored:');
+  console.log(stateValue[name]);
   return _setEntry(context, address, stateValue)
 }
 
