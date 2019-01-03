@@ -20,6 +20,8 @@
 const { TransactionProcessor } = require('sawtooth-sdk/processor')
 const ProvinceDPTHandler = require('./province-dpt-handler');
 const ProvinceVoteHandler = require('./province-vote-handler');
+const ProvinceVoterHandler = require('./province-voter-handler');
+const FinalHandler = require('./final-handler');
 const LocalVoteHandler = require('./local-vote-handler')
 const LocalDPTHandler = require('./local-dpt-handler')
 const CandidatesHandler = require('./local-candidates-handler')
@@ -51,6 +53,8 @@ switch(family) {
     break;
   case 'provinceVote':
     transactionProcessor.addHandler(new ProvinceVoteHandler())
+    transactionProcessor.addHandler(new ProvinceVoterHandler())
+    transactionProcessor.addHandler(new FinalHandler())
     transactionProcessor.start();
     break;
   default :
